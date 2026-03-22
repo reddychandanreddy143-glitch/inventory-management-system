@@ -1,58 +1,28 @@
-class Item:
-    def __init__(self, name, quantity, price):
-        self.name = name
-        self.quantity = quantity
-        self.price = price
+import streamlit as st
 
-class Ticket:
-    def __init__(self, person, place, seat):
-        self.person = person
-        self.place = place
-        self.seat = seat
+st.title("📦 Inventory Management System")
 
-items = []
-tickets = []
+# Initialize session state for inventory
+if 'inventory' not in st.session_state:
+    st.session_state.inventory = []
 
-def add_item():
-    name = input("\nEnter Item Name: ")
-    try:
-        qty = int(input("Enter Quantity: "))
-        price = float(input("Enter Price: "))
-        items.append(Item(name, qty, price))
-        print("\nItem Added.")
-    except ValueError:
-        print("\nInvalid input. Quantity must be an integer and Price a number.")
+# Sidebar for adding items
+st.sidebar.header("Add New Item")
+item_name = st.sidebar.text_input("Item Name")
+item_qty = st.sidebar.number_input("Quantity", min_value=1)
+item_price = st.sidebar.number_input("Price per Unit", min_value=0.0)
 
-def display_items():
-    if not items:
-        print("\nNo items found.")
-        return
-    print("\n------ ITEM LIST ------")
-    for i, item in enumerate(items, 1):
-        print(f"{i}. {item.name} | Qty: {item.quantity} | Price: {item.price:.2f}")
+if st.sidebar.button("Add to Inventory"):
+    st.session_state.inventory.append({"Name": item_name, "Qty": item_qty, "Price": item_price})
+    st.sidebar.success(f"Added {item_name}!")
 
-def generate_bill():
-    if not items:
-        print("\nBill is empty.")
-        return
-    total = 0
-    print("\n------- BILL -------")
-    for item in items:
-        amt = item.quantity * item.price
-        print(f"{item.name} x {item.quantity} = {amt:.2f}")
-        total += amt
-    print(f"--------------------\nTotal: {total:.2f}")
-
-# Main Menu Loop
-while True:
-    print("\n========= MENU =========")
-    print("1. Add Item\n2. Display Items\n3. Generate Bill\n4. Exit")
-    choice = input("Enter choice: ")
-
-    if choice == '1': add_item()
-    elif choice == '2': display_items()
-    elif choice == '3': generate_bill()
-    elif choice == '4': 
-        print("Goodbye.")
-        break
-    else: print("Invalid option.")
+# Main Area: Display Inventory
+st.subheader("Current Stock")
+if st.session_state.inventory:
+    st.table(st.session_state.inventory)
+    
+    # Billing Calculation
+    total = sum(item['Qty'] * item['Price'] for item in st.session_state.inventory)
+    st.write(f"### Total Inventory Value: ${total:,.2f}")
+else:
+    st.info("Your inventory is currently empty.")
